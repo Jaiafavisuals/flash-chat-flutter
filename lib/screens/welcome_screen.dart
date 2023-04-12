@@ -30,7 +30,6 @@ class _WelcomeScreenState extends State<WelcomeScreen>
 
     controller.addListener(() {
       setState(() {
-        print(animation.value);
       });
     });
   }
@@ -82,7 +81,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
               },
             ),
             RoundButton(
-              title: 'Regsiter',
+              title: 'Register',
               colour: Colors.lightBlueAccent,
               onPressed: () {
                 Navigator.pushNamed(context, RegistrationScreen.id);

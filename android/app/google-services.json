@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "844715745064",
+    "project_id": "chatlearnapp",
+    "storage_bucket": "chatlearnapp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:844715745064:android:0320c97211708a3b197a1d",
+        "android_client_info": {
+          "package_name": "co.jaiafavisuals.flash_chat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "844715745064-nmkgj8sruhpq9rvmbkepq5juvb90vdib.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAyk7ctU1Mlwq2Sm3Al57ZLCaLCQeTUyjE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "844715745064-nmkgj8sruhpq9rvmbkepq5juvb90vdib.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

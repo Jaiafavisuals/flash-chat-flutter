@@ -16,13 +16,12 @@ class RoundButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(30.0),
         elevation: 5.0,
         child: MaterialButton(
-          onPressed: () {
-            //Go to registration screen.
-          },
+          onPressed: onPressed,
           minWidth: 200.0,
           height: 42.0,
           child: Text(
             title,
+            style: TextStyle(color: Colors.white)
           ),
         ),
       ),
