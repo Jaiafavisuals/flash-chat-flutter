@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flash_chat/constants.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 // import 'package:flash_chat/screens/registration_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ChatScreen extends StatefulWidget {
   static const String id = 'chat_screen';
@@ -13,7 +14,9 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   final _auth = FirebaseAuth.instance;
+  final _firestore = FirebaseFirestore.instance;
   User loggedInUser;
+  String messageText;
 
   @override
   void initState() {
@@ -37,6 +40,21 @@ class _ChatScreenState extends State<ChatScreen> {
       print(e);
     }
   }
+  
+  // void getMessages () async{
+  //  final messages = await _firestore.collection('messages').get();
+  //  for(var message in messages.docs){
+  //    print(message.data());
+  //  }
+  // }
+
+  void messageStream () async {
+    await for (var snapshot in _firestore.collection('messages').snapshots()) {
+      for(var message in snapshot.docs) {
+        print(message.data());
+      }
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -46,6 +64,9 @@ class _ChatScreenState extends State<ChatScreen> {
           IconButton(
               icon: Icon(Icons.close),
               onPressed: () {
+                messageStream();
+                // _auth.signOut();
+                // Navigator.pop(context);
                 //Implement logout functionality
               }),
         ],
@@ -65,6 +86,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   Expanded(
                     child: TextField(
                       onChanged: (value) {
+                        messageText = value;
                         //Do something with the user input.
                       },
                       decoration: kMessageTextFieldDecoration,
@@ -72,6 +94,10 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                   ElevatedButton(
                     onPressed: () {
+                      _firestore.collection('messages').add({
+                        'text': messageText,
+                        'email': loggedInUser.email,
+                      });
                       //Implement send functionality.
                     },
                     child: Text(
