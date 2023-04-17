@@ -28,19 +28,18 @@ class _ChatScreenState extends State<ChatScreen> {
     await Firebase.initializeApp();
   }
 
-  void getCurrentUser () {
+  void getCurrentUser() {
     try {
-      final user =  _auth.currentUser;
+      final user = _auth.currentUser;
       if (user != null) {
         loggedInUser = user;
         print(loggedInUser.email);
       }
-    }
-    catch(e) {
+    } catch (e) {
       print(e);
     }
   }
-  
+
   // void getMessages () async{
   //  final messages = await _firestore.collection('messages').get();
   //  for(var message in messages.docs){
@@ -48,13 +47,14 @@ class _ChatScreenState extends State<ChatScreen> {
   //  }
   // }
 
-  void messageStream () async {
+  void messageStream() async {
     await for (var snapshot in _firestore.collection('messages').snapshots()) {
-      for(var message in snapshot.docs) {
+      for (var message in snapshot.docs) {
         print(message.data());
       }
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -81,45 +81,36 @@ class _ChatScreenState extends State<ChatScreen> {
             StreamBuilder<QuerySnapshot>(
               stream: _firestore.collection('messages').snapshots(),
               builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  final messages = snapshot.data.docs;
-                  List<Text> messageWidgets = [];
-                  for (var message in messages) {
-                    final messageData = message.data() as Map<String, dynamic>;
-                    final messageText = messageData['text'] as String;
-                    final messageSender = messageData['email'] as String;
-
-                    final messageWidget = Text('$messageText from $messageSender');
-                    messageWidgets.add(messageWidget);
-                  }
-                  return Column(
-                    children: messageWidgets,
+                if (!snapshot.hasData) {
+                  return Center(
+                    child: CircularProgressIndicator(
+                      backgroundColor: Colors.lightBlueAccent,
+                    ),
                   );
-                } else {
-                  return CircularProgressIndicator();
                 }
+                final messages = snapshot.data.docs;
+                List<MessageBubble> messageWidgets = [];
+                for (var message in messages) {
+                  final messageData = message.data() as Map<String, dynamic>;
+                  final messageText = messageData['text'] as String;
+                  final messageSender = messageData['email'] as String;
+
+                  final messageBubble = MessageBubble(
+                    text: messageText,
+                    sender: messageSender,
+                  );
+                  messageWidgets.add(messageBubble);
+                }
+                return Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 20, horizontal: 10),
+                    child: ListView(
+                      children: messageWidgets,
+                    ),
+                  ),
+                );
               },
             ),
-
-            // StreamBuilder<QuerySnapshot>(
-            //   stream: _firestore.collection('messages').snapshots(),
-            //   builder: (context, snapshot){
-            //     if (snapshot.hasData) {
-            //       final messages = snapshot.data.docs;
-            //       List<Text> messageWidgets = [];
-            //       for (var message in messages) {
-            //         final messageText = message.data()['text'];
-            //         final messageSender = message.data()['email'];
-            //
-            //         final messageWidget = Text('$messageText form $messageSender');
-            //         messageWidgets.add(messageWidget);
-            //       }
-            //       return Column(
-            //         children: messageWidgets,
-            //       );
-            //     }
-            //   },
-            // ),
             Container(
               decoration: kMessageContainerDecoration,
               child: Row(
@@ -151,6 +142,34 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class MessageBubble extends StatelessWidget {
+
+  MessageBubble({this.text, this.sender});
+
+  final String text;
+  final String sender;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.all(8.0),
+      child: Material(
+        borderRadius: BorderRadius.circular(20),
+        color: Colors.blueAccent,
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+          child: Text(
+            '$text from $sender',
+            style: TextStyle(
+              fontSize: 20,
+            ),
+          ),
         ),
       ),
     );
