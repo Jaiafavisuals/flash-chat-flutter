@@ -5,6 +5,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 // import 'package:flash_chat/screens/registration_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+final _firestore = FirebaseFirestore.instance;
+
 class ChatScreen extends StatefulWidget {
   static const String id = 'chat_screen';
 
@@ -13,8 +15,8 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
+  final messageTextController = TextEditingController();
   final _auth = FirebaseAuth.instance;
-  final _firestore = FirebaseFirestore.instance;
   User loggedInUser;
   String messageText;
 
@@ -78,39 +80,7 @@ class _ChatScreenState extends State<ChatScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            StreamBuilder<QuerySnapshot>(
-              stream: _firestore.collection('messages').snapshots(),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return Center(
-                    child: CircularProgressIndicator(
-                      backgroundColor: Colors.lightBlueAccent,
-                    ),
-                  );
-                }
-                final messages = snapshot.data.docs;
-                List<MessageBubble> messageWidgets = [];
-                for (var message in messages) {
-                  final messageData = message.data() as Map<String, dynamic>;
-                  final messageText = messageData['text'] as String;
-                  final messageSender = messageData['email'] as String;
-
-                  final messageBubble = MessageBubble(
-                    text: messageText,
-                    sender: messageSender,
-                  );
-                  messageWidgets.add(messageBubble);
-                }
-                return Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 20, horizontal: 10),
-                    child: ListView(
-                      children: messageWidgets,
-                    ),
-                  ),
-                );
-              },
-            ),
+            Messagestream(),
             Container(
               decoration: kMessageContainerDecoration,
               child: Row(
@@ -118,6 +88,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 children: <Widget>[
                   Expanded(
                     child: TextField(
+                      controller: messageTextController,
                       onChanged: (value) {
                         messageText = value;
                         //Do something with the user input.
@@ -127,6 +98,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                   ElevatedButton(
                     onPressed: () {
+                      messageTextController.clear();
                       _firestore.collection('messages').add({
                         'text': messageText,
                         'email': loggedInUser.email,
@@ -148,8 +120,48 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 }
 
-class MessageBubble extends StatelessWidget {
+class Messagestream extends StatelessWidget {
 
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<QuerySnapshot>(
+      stream: _firestore.collection('messages').snapshots(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return Center(
+            child: CircularProgressIndicator(
+              backgroundColor: Colors.lightBlueAccent,
+            ),
+          );
+        }
+        final messages = snapshot.data.docs;
+        List<MessageBubble> messageWidgets = [];
+        for (var message in messages) {
+          final messageData = message.data() as Map<String, dynamic>;
+          final messageText = messageData['text'] as String;
+          final messageSender = messageData['email'] as String;
+
+          final messageBubble = MessageBubble(
+            text: messageText,
+            sender: messageSender,
+          );
+          messageWidgets.add(messageBubble);
+        }
+        return Expanded(
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 20, horizontal: 10),
+            child: ListView(
+              children: messageWidgets,
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+
+class MessageBubble extends StatelessWidget {
   MessageBubble({this.text, this.sender});
 
   final String text;
@@ -159,18 +171,32 @@ class MessageBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.all(8.0),
-      child: Material(
-        borderRadius: BorderRadius.circular(20),
-        color: Colors.blueAccent,
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-          child: Text(
-            '$text from $sender',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: <Widget>[
+          Text(
+            sender ?? '',
             style: TextStyle(
-              fontSize: 20,
+              fontSize: 15,
+              color: Colors.black54,
             ),
           ),
-        ),
+          Material(
+            elevation: 5,
+            borderRadius: BorderRadius.circular(20),
+            color: Colors.blueAccent,
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              child: Text(
+                text,
+                style: TextStyle(
+                  fontSize: 20,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
